@@ -1,0 +1,180 @@
+<!--pages/index/index.wxml-->
+<view class="order-context">
+  <view class="context-main">
+    <view class="context-title">当前门店：{{currentStoreName || '未选择'}}</view>
+    <view class="context-sub">当前桌台：{{currentTableNo || '未绑定'}}</view>
+  </view>
+  <view class="context-actions">
+    <view class="context-btn" bindtap="onChooseStoreTap">选门店</view>
+    <view class="context-btn primary" bindtap="onScanTableTap">扫码点餐</view>
+  </view>
+</view>
+<view class="context-empty-tip" wx:if="{{!currentStoreId}}">请先选择门店或扫码桌台二维码</view>
+<view class="menu-container">
+  <scroll-view class="sidebar" scroll-y="true">
+    <block wx:for="{{categories}}" wx:key="_id">
+      <view class="category-item {{currentCategory === item._id ? 'active' : ''}}" 
+            bindtap="switchCategory" 
+            data-id="{{item._id}}">
+        {{item.name}}
+      </view>
+    </block>
+  </scroll-view>
+
+  <scroll-view class="food-list" scroll-y="true" scroll-into-view="cat-{{currentCategory}}" scroll-with-animation="true">
+    <block wx:for="{{categories}}" wx:for-index="catIndex" wx:key="_id">
+      <view class="category-title" id="cat-{{item._id}}">{{item.name}}</view>
+      <block wx:for="{{item.foods}}" wx:for-item="food" wx:for-index="foodIndex" wx:key="_id">
+        <view class="food-card">
+          <image class="food-img" src="{{food.image}}" mode="aspectFill"></image>
+          <view class="food-info">
+            <view>
+              <view class="food-name">{{food.name}}</view>
+              <view class="food-desc" wx:if="{{food.description}}">{{food.description}}</view>
+            </view>
+            <view class="food-bottom">
+              <view class="food-price-box"> 
+                <text class="food-price">¥{{food.price}}</text>
+              </view>
+      
+<!--               <view class="stepper">
+                <view class="minus-btn" wx:if="{{food.quantity > 0}}" 
+                      bindtap="onMinus" 
+                      data-cat-index="{{catIndex}}" 
+                      data-food-index="{{foodIndex}}">-</view>
+                
+                <text class="food-count" wx:if="{{food.quantity > 0}}">{{food.quantity}}</text>
+                
+                <view class="add-btn" 
+                      bindtap="onAdd" 
+                      data-cat-index="{{catIndex}}" 
+                      data-food-index="{{foodIndex}}">+</view>
+              </view> -->
+
+            </view>
+
+          </view>
+          <view class="right-action">
+            <view class="spec-btn-box" wx:if="{{food.hasSpec}}">
+              <view class="choose-spec-btn" bindtap="openSpecModal" data-cat-index="{{catIndex}}" data-food-index="{{foodIndex}}" style="position: relative; left: 0rpx; top: 0rpx">
+                选规格
+                <view class="spec-badge" wx:if="{{food.quantity > 0}}">{{food.quantity}}</view>
+              </view>
+            </view>
+            <view class="normal-stepper" wx:else>
+              <view class="minus-btn" wx:if="{{food.quantity > 0}}" bindtap="onMinus" data-cat-index="{{catIndex}}" data-food-index="{{foodIndex}}">-</view>
+              <text class="food-count" wx:if="{{food.quantity > 0}}">{{food.quantity}}</text>
+              <view class="add-btn" bindtap="onAdd" data-cat-index="{{catIndex}}" data-food-index="{{foodIndex}}">
+              </view>
+            </view>
+          </view>
+          </view>
+      </block>
+    </block>
+  </scroll-view>
+</view>
+
+<!-- 选规格弹窗 -->
+<view class="spec-mask" wx:if="{{showSpecModal}}" bindtap="closeSpecModal"></view>
+
+<view class="spec-modal" wx:if="{{showSpecModal}}">
+  <view class="spec-modal-header">
+    <text class="spec-modal-title">{{currentSpecFood.name}}</text>
+    <view class="spec-close-btn" bindtap="closeSpecModal">×</view>
+  </view>
+
+  <scroll-view scroll-y class="spec-modal-body">
+    <view class="spec-group-item" 
+          wx:for="{{currentSpecFood.spec_groups}}" 
+          wx:for-item="group" 
+          wx:for-index="gIndex" 
+          wx:key="title">
+      <view class="group-title-text">{{group.title}}</view>
+      
+      <view class="spec-tags-container">
+        <view class="spec-tag-item {{chosenSpecIndexes[gIndex] === tIndex ? 'active' : ''}}" 
+              wx:for="{{group.list}}" 
+              wx:for-item="tag" 
+              wx:for-index="tIndex" 
+              wx:key="*this"
+              bindtap="selectSpecTag" 
+              data-group-index="{{gIndex}}" 
+              data-tag-index="{{tIndex}}">
+          {{tag}}
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="spec-modal-footer">
+    <view class="spec-price-info">
+      <view class="spec-real-price">
+        <text class="currency-symbol">￥</text>{{currentSpecPrice}}
+      </view>
+      <view class="spec-chosen-des">已选：{{currentSpecString}}</view>
+    </view>
+    
+    <view class="spec-action-area">
+      <view class="spec-add-cart-btn" bindtap="addCurrentSpecToCart">
+        加入购物车
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="cart-bar">
+  <view class="cart-info" bindtap="toggleCartPopup">
+    <view class="cart-icon-box">
+      <image class="cart-icon" src="/images/cart.png"></image>
+      <view class="badge" wx:if="{{totalCount > 0}}">{{totalCount}}</view>
+    </view>
+    <view class="price-box">
+      <text class="total-price" wx:if="{{totalCount > 0}}">￥{{totalPrice}}</text>
+      <text class="empty-tip" wx:else>购物车是空的</text>
+    </view>
+  </view>
+  <view class="submit-btn {{totalCount > 0 ? 'usable' : ''}}" catchtap="handlePay">去结算</view>
+</view>
+
+<view class="cart-mask" 
+      wx:if="{{showCartPopup && totalCount > 0}}" 
+      bindtap="toggleCartPopup">
+</view>
+
+<view class="cart-popup {{showCartPopup && totalCount > 0 ? 'popup-show' : ''}}">
+  <view class="popup-header">
+    <text class="popup-title">已选商品</text>
+    <view class="clear-action" bindtap="clearCart">
+      <image class="clear-icon" src="/images/clear.png"></image>
+      <text>清空整个购物车</text>
+    </view>
+  </view>
+  
+  <scroll-view scroll-y class="popup-list">
+    <view class="cart-item" wx:for="{{cartList}}" wx:key="food_id">
+      <view class="cart-item-name">{{item.name}}</view>
+      
+      <view class="cart-stepper">
+        <view class="minus-btn" 
+              bindtap="onCartMinus" 
+              data-cat-index="{{item.catIndex}}" 
+              data-food-index="{{item.foodIndex}}" 
+              data-is-spec="{{item.isSpec}}" 
+              data-spec-key="{{item.specKey}}">-</view>
+              
+        <text class="food-count">{{item.quantity}}</text>
+        
+        <view class="add-btn" 
+              bindtap="onCartAdd" 
+              data-cat-index="{{item.catIndex}}" 
+              data-food-index="{{item.foodIndex}}" 
+              data-is-spec="{{item.isSpec}}" 
+              data-spec-key="{{item.specKey}}">
+              </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>
+
+
+

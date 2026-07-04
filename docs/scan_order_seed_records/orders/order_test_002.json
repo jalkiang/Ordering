@@ -1,0 +1,65 @@
+{
+  "_id": "order_test_002",
+  "order_no": "SO202606241002",
+  "store_id": "store_main_002",
+  "table_id": "table_b201",
+  "table_no": "B201",
+  "openid": "test_openid_002",
+  "user_nickname": "测试用户二",
+  "user_phone": "13900000002",
+  "order_type": "dine_in",
+  "people_count": 5,
+  "remark": "有老人，菜品尽量清淡",
+  "items": [
+    {
+      "food_id": "food_test_003",
+      "food_name": "黑椒牛柳饭",
+      "image": "",
+      "category_id": "category_test_rice",
+      "quantity": 2,
+      "unit_price": 32,
+      "total_price": 64,
+      "spec_key": "标准/不辣",
+      "specs": [
+        {
+          "group_name": "份量",
+          "value": "标准",
+          "price_add": 0
+        },
+        {
+          "group_name": "辣度",
+          "value": "不辣",
+          "price_add": 0
+        }
+      ],
+      "remark": ""
+    },
+    {
+      "food_id": "food_test_004",
+      "food_name": "蒜蓉生菜",
+      "image": "",
+      "category_id": "category_test_vegetable",
+      "quantity": 1,
+      "unit_price": 18,
+      "total_price": 18,
+      "spec_key": "",
+      "specs": [],
+      "remark": "少油"
+    }
+  ],
+  "item_count": 3,
+  "goods_amount": 82,
+  "discount_amount": 5,
+  "service_fee": 0,
+  "payable_amount": 77,
+  "paid_amount": 77,
+  "pay_status": "paid",
+  "order_status": "cooking",
+  "kitchen_status": "preparing",
+  "source": "scan_table",
+  "created_at": "2026-06-24T10:20:00+08:00",
+  "paid_at": "2026-06-24T10:21:00+08:00",
+  "cancelled_at": null,
+  "completed_at": null,
+  "updated_at": "2026-06-24T10:21:00+08:00"
+}

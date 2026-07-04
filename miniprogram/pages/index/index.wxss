@@ -1,0 +1,681 @@
+/* pages/index/index.wxss */
+.menu-container {
+  display: flex;
+  height: calc(100vh - 280rpx); /* 顶部上下文区 + 底部购物车 */
+  background-color: #f7f7f7;
+}
+
+.order-context {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx;
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.context-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.context-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #222222;
+}
+
+.context-sub {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #666666;
+}
+
+.context-actions {
+  display: flex;
+  gap: 12rpx;
+}
+
+.context-btn {
+  padding: 12rpx 18rpx;
+  border-radius: 12rpx;
+  background: #f3f5f7;
+  color: #333333;
+  font-size: 24rpx;
+}
+
+.context-btn.primary {
+  background: #07c160;
+  color: #ffffff;
+}
+
+.context-empty-tip {
+  padding: 16rpx 24rpx;
+  font-size: 24rpx;
+  color: #999999;
+  background: #fff9e6;
+}
+
+/* 左侧分类 */
+.sidebar {
+  width: 200rpx;
+  background-color: #f0f0f0;
+  height: 100%;
+}
+.category-item {
+  padding: 30rpx 20rpx;
+  font-size: 28rpx;
+  text-align: center;
+  color: #666;
+}
+.category-item.active {
+  background-color: #fff;
+  color: #000;
+  font-weight: bold;
+  border-left: 8rpx solid #07c160; /* 微信绿 */
+}
+
+/* 右侧菜品 */
+.food-list {
+  flex: 1;
+  background-color: #fff;
+  height: 100%;
+  padding: 0 20rpx;
+  min-width: 0;
+}
+.category-title {
+  font-size: 28rpx;
+  color: #999;
+  padding: 20rpx 0;
+}
+.food-card {
+  display: flex;
+  margin-bottom: 30rpx;
+}
+.food-img {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 12rpx;
+  background-color: #eee;
+}
+.food-info {
+  flex: 1;
+  margin-left: 20rpx;
+  margin-right: 10rpx;
+  display: flex;
+  flex-direction: column;
+  height: 140rpx; 
+  justify-content: space-between; 
+  overflow: hidden;
+
+  min-width: 0; 
+}
+.food-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333333;
+  line-height: 36rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; 
+  overflow: hidden;
+  word-break: break-all;
+}
+.food-desc {
+  font-size: 22rpx;
+  color: #999999;
+  line-height: 30rpx;
+  
+  width: 100%;
+  white-space: nowrap;      
+  overflow: hidden;         
+  text-overflow: ellipsis;  
+}
+
+/* 3. 价格包裹区 */
+.food-price-box {
+  display: flex;
+  align-items: flex-end;
+  line-height: 1;
+  margin-top: auto; /* 确保死死锚定在最底部 */
+}
+
+.food-price {
+  color: #ff4d4f;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+/* .right-action {
+  flex-shrink: 0;  
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 130rpx; 
+} */
+
+/* 底部购物车 */
+.cart-bar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 120rpx;
+  background-color: #fff;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40rpx;
+  box-sizing: border-box;
+  z-index: 999;
+}
+
+.food-desc {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* 最多显示两行描述，超出省略号 */
+  overflow: hidden;
+}
+.food-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cart-info {
+  display: flex;
+  align-items: baseline;
+}
+.price-label {
+  font-size: 28rpx;
+  color: #333;
+}
+.total-price {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #ff4d4f;
+}
+
+
+.food-bottom {
+  display: flex;
+  justify-content: space-between; /* 确保价格在左，加减器在全屏最右 */
+  align-items: center;
+  width: 100%; /* 必须撑满外层 */
+}
+
+
+/* --- 1. 底部固定购物车栏 --- */
+.cart-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100rpx;
+  background-color: #141d27;
+  display: flex;
+  z-index: 102; /* 最高层级，保证永远不被遮挡 */
+}
+.cart-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding-left: 30rpx;
+}
+.cart-icon-box {
+  position: relative;
+  width: 80rpx;
+  height: 80rpx;
+  background: #2b343c;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: -10rpx;
+}
+.cart-icon {
+  width: 50rpx;
+  height: 50rpx;
+}
+.badge {
+  position: absolute;
+  top: -10rpx;
+  right: -10rpx;
+  background: #ff4a4a;
+  color: white;
+  font-size: 20rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 20rpx;
+}
+.price-box {
+  color: #919396;
+  font-size: 32rpx;
+  margin-left: 20rpx;
+}
+.total-price {
+  color: #fff;
+  font-weight: bold;
+}
+.submit-btn {
+  width: 220rpx;
+  background: #2b333b;
+  color: #919396;
+  line-height: 100rpx;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: bold;
+}
+.submit-btn.usable {
+  background: #07c160;
+  color: #fff;
+}
+
+/* --- 2. 半透明黑色遮罩层 --- */
+.cart-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+/* --- 3. 购物车具体内容弹窗 --- */
+.cart-popup {
+  position: fixed;
+  bottom: -600rpx; /* 初始隐藏在屏幕下方 */
+  left: 0;
+  width: 100%;
+  max-height: 600rpx;
+  background: #ffffff;
+  z-index: 101;
+  border-radius: 20rpx 20rpx 0 0;
+  transition: all 0.3s ease; /* 丝滑的滑出动画 */
+  display: flex;
+  flex-direction: column;
+}
+/* 当带有这个类时，向上滑出显示 */
+.popup-show {
+  bottom: 100rpx; /* 刚好卡在底部购物车栏的上方 */
+}
+.popup-header {
+  height: 80rpx;
+  background: #f3f5f7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 30rpx;
+  border-radius: 20rpx 20rpx 0 0;
+}
+.popup-title {
+  font-size: 28rpx;
+  color: #333;
+}
+.clear-action {
+  font-size: 26rpx;
+  color: #666;
+  display: flex;
+  align-items: center;
+}
+.clear-icon {
+  width: 30rpx;
+  height: 30rpx;
+  margin-right: 6rpx;
+}
+.popup-list {
+  flex: 1;
+  overflow-y: scroll;
+  padding: 0 30rpx 30rpx 30rpx;
+  box-sizing: border-box;
+}
+.cart-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 2rpx solid #f2f2f2;
+}
+.cart-item-name {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+.item-price {
+  font-size: 28rpx;
+  color: #ff4a4a;
+  font-weight: bold;
+  margin-right: 30rpx;
+}
+
+/* 之前为你调整好的标准横向排开加减号 */
+.cart-stepper { display: flex !important; flex-direction: row !important; align-items: center !important; }
+.food-count { display: inline-block !important; min-width: 50rpx; text-align: center; font-size: 28rpx; color: #333; font-weight: bold; margin: 0 10rpx; position: static !important;}
+
+.add-btn, .minus-btn {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  background-color: #07c160;
+  position: relative; /* 必须 */
+  color: transparent; /* 隐藏原有的文本内容，防止重影 */
+}
+
+/* 1. 加减号圆圈共同的基础底座 */
+.minus-btn, .add-btn {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  box-sizing: border-box;
+  
+  /* 🔥 核心：彻底转为 Flex 容器，双轴绝对居中内部图片 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 2. 减号按钮（白底绿边） */
+.minus-btn {
+  background-color: #ffffff;
+  border: 2rpx solid #07c160; /* 替换成你的主题色 */
+}
+
+/* 3. 加号按钮（纯绿底） */
+.add-btn {
+  background-color: #07c160; /* 替换成你的主题色 */
+}
+
+.add-btn::before,
+.add-btn::after,
+.minus-btn::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24rpx;
+  height: 5rpx;
+  border-radius: 999rpx;
+  background-color: #ffffff;
+  transform: translate(-50%, -50%);
+}
+
+.add-btn::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.minus-btn::before {
+  background-color: #07c160;
+  height: 5rpx;
+}
+
+.add-btn:active {
+  transform: scale(0.94);
+  background-color: #06ad56;
+}
+
+.minus-btn:active {
+  transform: scale(0.94);
+}
+
+/* 4. 🔥 核心：限制图片图标的大小与缩放 */
+.btn-icon {
+  width: 24rpx;  /* 图标本身的大小，可根据视觉效果自由微调 */
+  height: 24rpx;
+  display: block;
+  
+  /* 规避小程序的图片默认边距问题 */
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
+/* 1. 右侧操作按钮区域 */
+.right-action {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 130rpx;
+  
+  /* 🔥 核心改进 1：强行允许内部元素溢出，绝不裁剪 */
+  overflow: visible !important; 
+  
+  /* 🔥 核心改进 2：向右侧撑开一点内边距，给探出头的小红点留出绝对安全的容身之所 */
+  padding-right: 15rpx; 
+}
+
+/* 2. 选规格按钮的外包盒 */
+.spec-btn-box {
+  position: relative;
+  overflow: visible !important; /* 🔥 核心改进 3：确保不裁剪 */
+}
+
+/* 3. “选规格”按钮本身 */
+.choose-spec-btn {
+  position: relative; /* 必须：作为小红点绝对定位的基准 */
+  font-size: 24rpx;
+  color: #ffffff;
+  background-color: #07c160; /* 你的主题色 */
+  padding: 10rpx 24rpx;
+  border-radius: 24rpx;
+  
+  /* ⚠️ 检查你的代码：如果这里有 overflow: hidden; 请务必删掉它！ */
+}
+
+/* 4. 🔥 完美浮空角标样式 */
+.spec-badge {
+  position: absolute;
+  
+  /* 💡 黄金定位：死死锁在按钮的右上角 */
+  top: 0;
+  right: 0;
+  /* 💡 灵魂平移：将坐标原点精准定位在红点的正中心，往右上角各弹开半个身位 */
+  transform: translate(40%, -45%); 
+  
+  background-color: #ff4d4f; /* 喜茶/瑞幸同款高亮警示红 */
+  color: #ffffff;
+  font-size: 20rpx;
+  font-weight: bold;
+  
+  /* 💡 宽高与圆角：确保单数是正圆，双数自动撑开成胶囊圆 */
+  min-width: 32rpx;
+  height: 32rpx;
+  line-height: 28rpx; /* 稍微提上去一点，让数字垂直绝对居中 */
+  border-radius: 16rpx;
+  padding: 0 8rpx;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  
+  /* 💡 双重保险：确保层级高，且带一圈精致的白边，防止和背景混在一起 */
+  z-index: 10;
+  border: 2rpx solid #ffffff; 
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+}
+
+
+/* 无规格的普通加减号容器 */
+.normal-stepper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+/* 统一的主页基础加减号样式 */
+.minus-btn {
+  width: 44rpx;
+  height: 44rpx;
+  border: 2rpx solid #07c160;
+  color: transparent;
+  border-radius: 50%;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  position: relative;
+}
+.food-count {
+  display: inline-block;
+  min-width: 50rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #333;
+  font-weight: bold;
+}
+
+
+/* --- 规格弹窗核心样式 --- */
+
+/* 遮罩 */
+.spec-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 999; /* 确保压在最上层 */
+}
+
+/* 弹窗主体（高颜值居中卡片） */
+.spec-modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 84%;
+  max-height: 75%;
+  background: #ffffff;
+  border-radius: 24rpx;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10rpx 40rpx rgba(0,0,0,0.15);
+}
+
+/* 弹窗头部 */
+.spec-modal-header {
+  position: relative;
+  padding: 34rpx 40rpx 20rpx;
+  text-align: center;
+}
+.spec-modal-title {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #333333;
+}
+.spec-close-btn {
+  position: absolute;
+  top: 24rpx; right: 34rpx;
+  font-size: 48rpx;
+  color: #999999;
+  line-height: 1;
+  padding: 10rpx;
+}
+
+/* 中间滚动区 */
+.spec-modal-body {
+  flex: 1;
+  padding: 0 40rpx;
+  box-sizing: border-box;
+  overflow-y: scroll;
+}
+.spec-group-item {
+  margin-bottom: 30rpx;
+}
+.group-title-text {
+  font-size: 26rpx;
+  color: #666666;
+  margin-bottom: 16rpx;
+}
+.spec-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* 默认规格标签 */
+.spec-tag-item {
+  padding: 14rpx 28rpx;
+  background: #f6f6f6;
+  color: #333333;
+  font-size: 26rpx;
+  border-radius: 12rpx;
+  margin-right: 20rpx;
+  margin-bottom: 20rpx;
+  border: 2rpx solid #f6f6f6;
+  transition: all 0.2s ease;
+}
+/* 选中高亮标签 */
+.spec-tag-item.active {
+  background: #f0fbf5;
+  color: #07c160;
+  border-color: #07c160;
+  font-weight: bold;
+}
+
+/* 底部操作栏 */
+.spec-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30rpx 40rpx;
+  background: #fafafa;
+  border-top: 2rpx solid #eeeeee;
+}
+.spec-price-info {
+  display: flex;
+  flex-direction: column;
+}
+.spec-real-price {
+  font-size: 44rpx;
+  font-weight: bold;
+  color: #ff4d4f;
+  line-height: 1;
+}
+.currency-symbol {
+  font-size: 28rpx;
+}
+.spec-chosen-des {
+  font-size: 22rpx;
+  color: #999999;
+  margin-top: 8rpx;
+}
+
+/* 底部“加入购物车”大按钮 */
+.spec-add-cart-btn {
+  background: #07c160;
+  color: #ffffff;
+  font-size: 26rpx;
+  font-weight: bold;
+  padding: 18rpx 36rpx;
+  border-radius: 36rpx;
+  box-shadow: 0 6rpx 16rpx rgba(7, 193, 96, 0.2);
+}
+
+/* 弹窗内专用步进器加减号 */
+.spec-stepper-box {
+  display: flex;
+  align-items: center;
+}
+.spec-step-btn {
+  width: 52rpx; height: 52rpx;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 38rpx;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+.spec-step-btn.minus {
+  border: 2rpx solid #07c160;
+  color: #07c160;
+  line-height: 46rpx;
+}
+.spec-step-btn.add {
+  background: #07c160;
+  color: #ffffff;
+  line-height: 48rpx;
+}
+.spec-step-num {
+  min-width: 54rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333333;
+}

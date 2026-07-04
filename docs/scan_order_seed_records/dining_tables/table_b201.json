@@ -1,0 +1,14 @@
+{
+  "_id": "table_b201",
+  "store_id": "store_main_002",
+  "table_no": "B201",
+  "table_name": "包间 B201",
+  "area": "包间",
+  "capacity": 8,
+  "qr_scene": "table_id=table_b201",
+  "qr_code_url": "",
+  "status": 1,
+  "current_order_id": "order_test_002",
+  "created_at": "2026-06-24T10:05:00+08:00",
+  "updated_at": "2026-06-24T10:05:00+08:00"
+}

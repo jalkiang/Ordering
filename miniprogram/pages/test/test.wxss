@@ -1,0 +1,69 @@
+/* pages/test/test.wxss */
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48rpx;
+  box-sizing: border-box;
+}
+.counter {
+  display: flex;
+  align-items: center;
+  gap: 32rpx;
+}
+.circle-btn {
+  width: 24rpx;
+  height: 24rpx;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: #12b76a;
+  box-shadow: 0 12rpx 24rpx rgba(18, 183, 106, 0.26);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+.circle-btn::after {
+  border: 0;
+}
+.circle-btn:active {
+  transform: scale(0.94);
+  background: #0f9f5d;
+  box-shadow: 0 6rpx 14rpx rgba(18, 183, 106, 0.2);
+}
+.icon {
+  position: relative;
+    position: relative;
+    width: 40rpx;
+    height: 40rpx;
+    width: 24rpx;
+    height: 24rpx;
+
+}
+.icon::before,
+.icon::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 36rpx;
+  height: 6rpx;
+  border-radius: 24rpx;
+  background: #ffffff;
+  transform: translate(-50%, -50%);
+}
+.plus::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.minus::after {
+  display: none;
+}
+.count {
+  min-width: 88rpx;
+  text-align: center;
+  font-size: 44rpx;
+  font-weight: 10;
+  line-height: 1;
+  color: #1f2933;
+}

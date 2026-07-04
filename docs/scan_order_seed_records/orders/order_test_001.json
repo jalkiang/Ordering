@@ -1,0 +1,76 @@
+{
+  "_id": "order_test_001",
+  "order_no": "SO202606241001",
+  "store_id": "store_main_001",
+  "table_id": "table_a001",
+  "table_no": "A001",
+  "openid": "test_openid_001",
+  "user_nickname": "测试用户一",
+  "user_phone": "",
+  "order_type": "dine_in",
+  "people_count": 2,
+  "remark": "少放葱",
+  "items": [
+    {
+      "food_id": "food_test_001",
+      "food_name": "招牌牛肉面",
+      "image": "",
+      "category_id": "category_test_noodle",
+      "quantity": 1,
+      "unit_price": 28,
+      "total_price": 28,
+      "spec_key": "大份/微辣",
+      "specs": [
+        {
+          "group_name": "份量",
+          "value": "大份",
+          "price_add": 4
+        },
+        {
+          "group_name": "辣度",
+          "value": "微辣",
+          "price_add": 0
+        }
+      ],
+      "remark": ""
+    },
+    {
+      "food_id": "food_test_002",
+      "food_name": "柠檬茶",
+      "image": "",
+      "category_id": "category_test_drink",
+      "quantity": 2,
+      "unit_price": 12,
+      "total_price": 24,
+      "spec_key": "正常冰/少糖",
+      "specs": [
+        {
+          "group_name": "冰量",
+          "value": "正常冰",
+          "price_add": 0
+        },
+        {
+          "group_name": "甜度",
+          "value": "少糖",
+          "price_add": 0
+        }
+      ],
+      "remark": ""
+    }
+  ],
+  "item_count": 3,
+  "goods_amount": 52,
+  "discount_amount": 0,
+  "service_fee": 0,
+  "payable_amount": 52,
+  "paid_amount": 0,
+  "pay_status": "unpaid",
+  "order_status": "pending",
+  "kitchen_status": "waiting",
+  "source": "scan_table",
+  "created_at": "2026-06-24T10:10:00+08:00",
+  "paid_at": null,
+  "cancelled_at": null,
+  "completed_at": null,
+  "updated_at": "2026-06-24T10:10:00+08:00"
+}
