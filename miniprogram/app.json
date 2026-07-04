@@ -5,7 +5,8 @@
     "pages/settlement/settlement",
     "pages/test/test",
     "pages/home/home",
-    "pages/mine/mine"
+    "pages/mine/mine",
+    "pages/page_order/page_order"
   ],
   "entryPagePath": "pages/index/index",
   "window": {
@@ -26,7 +27,12 @@
     "list": [{
       "pagePath": "pages/home/home",
       "text": "首页"
-    }, {
+    },
+    {
+        "pagePath": "pages/page_order/page_order",
+        "text": "订单"
+    }, 
+    {
       "pagePath": "pages/mine/mine",
       "text": "我的"
     }]
