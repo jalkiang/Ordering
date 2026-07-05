@@ -5,5 +5,10 @@ Page({
         selected: 0
       })
     }
+  },
+  order_food:function(){
+    wx.navigateTo({
+      url:'/pages/index/index'
+    })
   }
 })

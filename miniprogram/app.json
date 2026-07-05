@@ -8,7 +8,7 @@
     "pages/mine/mine",
     "pages/page_order/page_order"
   ],
-  "entryPagePath": "pages/index/index",
+  "entryPagePath": "pages/home/home",
   "window": {
     "backgroundColor": "#F6F6F6",
     "backgroundTextStyle": "light",
