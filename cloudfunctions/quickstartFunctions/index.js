@@ -4,28 +4,44 @@ cloud.init({
 });
 
 const db = cloud.database();
+const _ = db.command;
+
+const getUserByOpenid = async (openid) => {
+  try {
+    const res = await db.collection("users").doc(openid).get();
+    return res.data || null;
+  } catch (e) {
+    return null;
+  }
+};
 
 const upsertById = async (collectionName, record) => {
+  const recordId = record && record._id;
+  if (!recordId) {
+    throw new Error(`upsertById missing _id for ${collectionName}`);
+  }
+  const { _id, ...dataWithoutId } = record;
+
   // 优先使用 set 覆盖，失败时回退为 where+update / add，兼容不同运行环境
   try {
-    await db.collection(collectionName).doc(record._id).set({
-      data: record,
+    await db.collection(collectionName).doc(recordId).set({
+      data: dataWithoutId,
     });
     return;
   } catch (setErr) {
     const existing = await db
       .collection(collectionName)
-      .where({ _id: record._id })
+      .where({ _id: recordId })
       .limit(1)
       .get();
 
     if (existing.data && existing.data.length > 0) {
-      await db.collection(collectionName).where({ _id: record._id }).update({
-        data: record,
+      await db.collection(collectionName).where({ _id: recordId }).update({
+        data: dataWithoutId,
       });
     } else {
-      await db.collection(collectionName).add({
-        data: record,
+      await db.collection(collectionName).doc(recordId).set({
+        data: dataWithoutId,
       });
     }
   }
@@ -401,6 +417,13 @@ const createScanOrder = async (event) => {
   const now = new Date().toISOString();
   const wxContext = cloud.getWXContext();
   const openid = wxContext.OPENID || "";
+  const currentUser = await getUserByOpenid(openid);
+  if (!currentUser || !currentUser.phone_number) {
+    return {
+      success: false,
+      message: "请先完成手机号授权登录",
+    };
+  }
 
   const normalizedItems = items.map((item) => {
     const quantity = Number(item.quantity || 0);
@@ -427,11 +450,12 @@ const createScanOrder = async (event) => {
   const orderDoc = {
     order_no: orderNo,
     store_id: data.store_id,
+    store_name: data.store_name || "",
     table_id: data.table_id,
     table_no: data.table_no || "",
     openid,
-    user_nickname: data.user_nickname || "",
-    user_phone: data.user_phone || "",
+    user_nickname: data.user_nickname || currentUser.nick_name || "微信用户",
+    user_phone: currentUser.phone_number || "",
     order_type: "dine_in",
     people_count: Number(data.people_count || 1),
     remark: data.remark || "",
@@ -493,6 +517,413 @@ const createScanOrder = async (event) => {
       payable_amount: payableAmount,
       item_count: itemCount,
     },
+  };
+};
+
+const listScanOrders = async (event) => {
+  const data = event.data || {};
+  const pageNo = Math.max(1, Number(data.page_no || 1));
+  const pageSize = Math.min(50, Math.max(1, Number(data.page_size || 20)));
+
+  const where = {};
+  if (data.store_id) where.store_id = data.store_id;
+  if (data.table_id) where.table_id = data.table_id;
+  if (data.order_status && data.order_status !== "all") {
+    where.order_status = data.order_status;
+  }
+  if (data.pay_status && data.pay_status !== "all") {
+    where.pay_status = data.pay_status;
+  }
+
+  const collection = db.collection("orders").where(where);
+  const countRes = await collection.count();
+  const total = countRes.total || 0;
+
+  const listRes = await collection
+    .orderBy("created_at", "desc")
+    .skip((pageNo - 1) * pageSize)
+    .limit(pageSize)
+    .get();
+
+  return {
+    success: true,
+    data: {
+      list: listRes.data || [],
+      total,
+      page_no: pageNo,
+      page_size: pageSize,
+    },
+  };
+};
+
+const updateScanOrderStatus = async (event) => {
+  const data = event.data || {};
+  const orderId = data.order_id;
+  const nextOrderStatus = data.next_order_status;
+  const nextPayStatus = data.next_pay_status;
+
+  if (!orderId) {
+    return { success: false, message: "缺少 order_id" };
+  }
+  if (!nextOrderStatus && !nextPayStatus) {
+    return { success: false, message: "缺少更新状态参数" };
+  }
+
+  const now = new Date().toISOString();
+  const orderRes = await db.collection("orders").doc(orderId).get();
+  const order = orderRes.data;
+  if (!order) {
+    return { success: false, message: "订单不存在" };
+  }
+
+  const updateData = { updated_at: now };
+  if (nextOrderStatus) {
+    updateData.order_status = nextOrderStatus;
+    if (nextOrderStatus === "completed") updateData.completed_at = now;
+    if (nextOrderStatus === "cancelled") updateData.cancelled_at = now;
+  }
+  if (nextPayStatus) {
+    updateData.pay_status = nextPayStatus;
+    if (nextPayStatus === "paid") {
+      updateData.paid_at = now;
+      updateData.paid_amount = Number(order.payable_amount || 0);
+    }
+  }
+
+  await db.collection("orders").doc(orderId).update({
+    data: updateData,
+  });
+
+  await db.collection("order_events").add({
+    data: {
+      order_id: orderId,
+      event_type: "order_status_changed",
+      operator: {
+        type: "staff",
+        openid: "",
+      },
+      payload: {
+        from_order_status: order.order_status,
+        to_order_status: nextOrderStatus || order.order_status,
+        from_pay_status: order.pay_status,
+        to_pay_status: nextPayStatus || order.pay_status,
+      },
+      created_at: now,
+    },
+  });
+
+  if (nextOrderStatus === "completed" || nextOrderStatus === "cancelled") {
+    await db
+      .collection("dining_tables")
+      .where({ _id: order.table_id, current_order_id: orderId })
+      .update({
+        data: {
+          current_order_id: "",
+          updated_at: now,
+        },
+      });
+  }
+
+  return {
+    success: true,
+    message: "订单状态更新成功",
+  };
+};
+
+const listUserOrders = async (event) => {
+  const data = event.data || {};
+  const wxContext = cloud.getWXContext();
+  const openid = wxContext.OPENID || "";
+  if (!openid) {
+    return { success: false, message: "未获取到用户身份" };
+  }
+  const currentUser = await getUserByOpenid(openid);
+  if (!currentUser || !currentUser.phone_number) {
+    return { success: false, message: "请先完成手机号授权登录" };
+  }
+
+  const pageNo = Math.max(1, Number(data.page_no || 1));
+  const pageSize = Math.min(50, Math.max(1, Number(data.page_size || 20)));
+  const where = { openid };
+
+  if (data.store_id) where.store_id = data.store_id;
+  if (data.status_filter === "ongoing") {
+    where.order_status = _.in(["pending", "cooking"]);
+  } else if (data.status_filter === "completed") {
+    where.order_status = "completed";
+  } else if (data.status_filter === "cancelled") {
+    where.order_status = "cancelled";
+  }
+
+  const collection = db.collection("orders").where(where);
+  const countRes = await collection.count();
+  const total = countRes.total || 0;
+  const listRes = await collection
+    .orderBy("created_at", "desc")
+    .skip((pageNo - 1) * pageSize)
+    .limit(pageSize)
+    .get();
+
+  return {
+    success: true,
+    data: {
+      list: listRes.data || [],
+      total,
+      page_no: pageNo,
+      page_size: pageSize,
+    },
+  };
+};
+
+const userOrderAction = async (event) => {
+  const data = event.data || {};
+  const orderId = data.order_id;
+  const action = data.action;
+  if (!orderId || !action) {
+    return { success: false, message: "缺少参数" };
+  }
+
+  const wxContext = cloud.getWXContext();
+  const openid = wxContext.OPENID || "";
+  const currentUser = await getUserByOpenid(openid);
+  if (!currentUser || !currentUser.phone_number) {
+    return { success: false, message: "请先完成手机号授权登录" };
+  }
+  const orderRes = await db.collection("orders").doc(orderId).get();
+  const order = orderRes.data;
+  if (!order) return { success: false, message: "订单不存在" };
+  if (order.openid !== openid) {
+    return { success: false, message: "无权限操作该订单" };
+  }
+
+  const now = new Date().toISOString();
+  const updateData = { updated_at: now };
+  let eventType = "";
+
+  if (action === "cancel") {
+    if (order.order_status !== "pending") {
+      return { success: false, message: "仅待接单订单可取消" };
+    }
+    updateData.order_status = "cancelled";
+    updateData.cancelled_at = now;
+    eventType = "order_cancelled_by_user";
+  } else if (action === "pay") {
+    if (order.pay_status === "paid") {
+      return { success: false, message: "订单已支付" };
+    }
+    updateData.pay_status = "paid";
+    updateData.paid_amount = Number(order.payable_amount || 0);
+    updateData.paid_at = now;
+    eventType = "order_paid_by_user";
+  } else {
+    return { success: false, message: "不支持的操作" };
+  }
+
+  await db.collection("orders").doc(orderId).update({
+    data: updateData,
+  });
+
+  await db.collection("order_events").add({
+    data: {
+      order_id: orderId,
+      event_type: eventType,
+      operator: {
+        type: "user",
+        openid,
+      },
+      payload: {
+        action,
+      },
+      created_at: now,
+    },
+  });
+
+  if (action === "cancel") {
+    await db
+      .collection("dining_tables")
+      .where({ _id: order.table_id, current_order_id: orderId })
+      .update({
+        data: {
+          current_order_id: "",
+          updated_at: now,
+        },
+      });
+  }
+
+  return {
+    success: true,
+    message: "操作成功",
+  };
+};
+
+const getUserOrderDetail = async (event) => {
+  const data = event.data || {};
+  const orderId = data.order_id;
+  if (!orderId) {
+    return { success: false, message: "缺少 order_id" };
+  }
+
+  const wxContext = cloud.getWXContext();
+  const openid = wxContext.OPENID || "";
+  const currentUser = await getUserByOpenid(openid);
+  if (!currentUser || !currentUser.phone_number) {
+    return { success: false, message: "请先完成手机号授权登录" };
+  }
+
+  const orderRes = await db.collection("orders").doc(orderId).get();
+  const order = orderRes.data;
+  if (!order) return { success: false, message: "订单不存在" };
+  if (order.openid !== openid) {
+    return { success: false, message: "无权限查看该订单" };
+  }
+
+  return {
+    success: true,
+    data: order,
+  };
+};
+
+const loginUserWithPhone = async (event) => {
+  const data = event.data || {};
+  const now = new Date().toISOString();
+  const wxContext = cloud.getWXContext();
+  const openid = wxContext.OPENID || "";
+  if (!openid) {
+    return {
+      success: false,
+      message: "登录失败，未获取到 openid",
+    };
+  }
+  if (!data.phone_code) {
+    return {
+      success: false,
+      message: "缺少手机号授权 code",
+    };
+  }
+
+  const profile = data.profile || {};
+  await ensureCollections(["users"]);
+
+  let phoneInfo = null;
+  try {
+    const phoneRes = await cloud.openapi.phonenumber.getPhoneNumber({
+      code: data.phone_code,
+    });
+    phoneInfo = phoneRes.phoneInfo || null;
+  } catch (e) {
+    return {
+      success: false,
+      message: "手机号授权失败，请重试",
+      error: e && e.message ? e.message : String(e),
+    };
+  }
+  if (!phoneInfo || !phoneInfo.phoneNumber) {
+    return {
+      success: false,
+      message: "未获取到手机号",
+    };
+  }
+
+  let createdAt = now;
+  try {
+    const existing = await db.collection("users").doc(openid).get();
+    if (existing && existing.data && existing.data.created_at) {
+      createdAt = existing.data.created_at;
+    }
+  } catch (e) {
+    // 首次登录时 users 里不存在该用户，忽略
+  }
+
+  const loginDoc = {
+    _id: openid,
+    openid,
+    appid: wxContext.APPID || "",
+    unionid: wxContext.UNIONID || "",
+    nick_name: profile.nickName || "",
+    avatar_url: profile.avatarUrl || "",
+    gender: Number(profile.gender || 0),
+    city: profile.city || "",
+    province: profile.province || "",
+    country: profile.country || "",
+    language: profile.language || "",
+    phone_number: phoneInfo.phoneNumber || "",
+    pure_phone_number: phoneInfo.purePhoneNumber || "",
+    country_code: phoneInfo.countryCode || "",
+    phone_number_verified: true,
+    created_at: createdAt,
+    updated_at: now,
+  };
+
+  await upsertById("users", loginDoc);
+  return {
+    success: true,
+    data: loginDoc,
+  };
+};
+
+const getLoginUser = async () => {
+  const wxContext = cloud.getWXContext();
+  const openid = wxContext.OPENID || "";
+  if (!openid) {
+    return {
+      success: false,
+      message: "未获取到 openid",
+    };
+  }
+
+  try {
+    const userRes = await db.collection("users").doc(openid).get();
+    return {
+      success: true,
+      data: userRes.data || null,
+    };
+  } catch (e) {
+    return {
+      success: true,
+      data: null,
+    };
+  }
+};
+
+const devMockLogin = async () => {
+  const now = new Date().toISOString();
+  const wxContext = cloud.getWXContext();
+  const openid = wxContext.OPENID || "";
+  if (!openid) {
+    return {
+      success: false,
+      message: "未获取到 openid",
+    };
+  }
+
+  await ensureCollections(["users"]);
+  const existing = await getUserByOpenid(openid);
+  const loginDoc = {
+    _id: openid,
+    openid,
+    appid: wxContext.APPID || "",
+    unionid: wxContext.UNIONID || "",
+    nick_name: (existing && existing.nick_name) || "测试用户",
+    avatar_url: (existing && existing.avatar_url) || "",
+    gender: (existing && existing.gender) || 0,
+    city: (existing && existing.city) || "",
+    province: (existing && existing.province) || "",
+    country: (existing && existing.country) || "",
+    language: (existing && existing.language) || "",
+    phone_number: (existing && existing.phone_number) || "13800000000",
+    pure_phone_number: (existing && existing.pure_phone_number) || "13800000000",
+    country_code: (existing && existing.country_code) || "86",
+    phone_number_verified: true,
+    created_at: (existing && existing.created_at) || now,
+    updated_at: now,
+    is_mock_login: true,
+  };
+
+  await upsertById("users", loginDoc);
+  return {
+    success: true,
+    data: loginDoc,
+    message: "已写入测试登录信息",
   };
 };
 // 获取openid
@@ -648,6 +1079,144 @@ const deleteRecord = async (event) => {
   }
 };
 
+const getBannerImg = async () => {
+  const root = "cloud://cloud1-d7gt62ex18961a7ea.636c-cloud1-d7gt62ex18961a7ea-1442037819";
+  const candidateGroups = [
+    [`${root}/banner1.png`, `${root}/images/banner1.png`],
+    [`${root}/banner2.png`, `${root}/images/banner2.png`],
+    [`${root}/banner3.png`, `${root}/images/banner3.png`],
+  ];
+
+  const fileList = candidateGroups.flat();
+  const tempRes = await cloud.getTempFileURL({ fileList });
+  const urlMap = {};
+  (tempRes.fileList || []).forEach((item) => {
+    if (item.status === 0 && item.tempFileURL) {
+      urlMap[item.fileID] = item.tempFileURL;
+    }
+  });
+
+  const banners = candidateGroups
+    .map((group) => {
+      const hitFileId = group.find((id) => !!urlMap[id]);
+      return hitFileId ? urlMap[hitFileId] : "";
+    })
+    .filter(Boolean);
+
+  return {
+    success: banners.length > 0,
+    data: banners,
+    message: banners.length > 0 ? "ok" : "未找到可用轮播图文件",
+  };
+};
+
+const updateFoodStatus = async (event) => {
+  const data = event.data || {};
+  const foodId = data.food_id;
+  const status = Number(data.status);
+
+  if (!foodId) {
+    return { success: false, message: "缺少 food_id" };
+  }
+  if (![0, 1].includes(status)) {
+    return { success: false, message: "status 仅支持 0 或 1" };
+  }
+
+  const now = new Date().toISOString();
+  const foodRes = await db.collection("foods").doc(foodId).get();
+  if (!foodRes.data) {
+    return { success: false, message: "商品不存在" };
+  }
+
+  await db.collection("foods").doc(foodId).update({
+    data: {
+      status,
+      updated_at: now,
+    },
+  });
+
+  return {
+    success: true,
+    message: status === 1 ? "商品已上架" : "商品已下架",
+  };
+};
+
+function normalizeFoodPayload(data = {}) {
+  const price = Number(data.price);
+  const sort = Number(data.sort);
+  return {
+    store_id: data.store_id || "",
+    category_id: data.category_id || "",
+    name: String(data.name || "").trim(),
+    image: String(data.image || "").trim(),
+    description: String(data.description || "").trim(),
+    price: Number.isNaN(price) ? 0 : Number(price.toFixed(2)),
+    sort: Number.isInteger(sort) && sort > 0 ? sort : 1,
+    status: [0, 1].includes(Number(data.status)) ? Number(data.status) : 1,
+    hasSpec: !!data.hasSpec,
+    spec_groups: Array.isArray(data.spec_groups) ? data.spec_groups : [],
+  };
+}
+
+const createFood = async (event) => {
+  const payload = normalizeFoodPayload(event.data || {});
+  if (!payload.store_id) return { success: false, message: "缺少 store_id" };
+  if (!payload.category_id) return { success: false, message: "请选择分类" };
+  if (!payload.name) return { success: false, message: "请输入商品名称" };
+  if (payload.price < 0) return { success: false, message: "价格不能小于 0" };
+
+  const now = new Date().toISOString();
+  const addRes = await db.collection("foods").add({
+    data: {
+      ...payload,
+      created_at: now,
+      updated_at: now,
+    },
+  });
+
+  return {
+    success: true,
+    message: "商品新增成功",
+    data: { food_id: addRes._id },
+  };
+};
+
+const updateFood = async (event) => {
+  const data = event.data || {};
+  const foodId = data.food_id;
+  if (!foodId) return { success: false, message: "缺少 food_id" };
+
+  const payload = normalizeFoodPayload(data);
+  if (!payload.store_id) return { success: false, message: "缺少 store_id" };
+  if (!payload.category_id) return { success: false, message: "请选择分类" };
+  if (!payload.name) return { success: false, message: "请输入商品名称" };
+  if (payload.price < 0) return { success: false, message: "价格不能小于 0" };
+
+  const foodRes = await db.collection("foods").doc(foodId).get();
+  if (!foodRes.data) return { success: false, message: "商品不存在" };
+
+  const now = new Date().toISOString();
+  await db.collection("foods").doc(foodId).update({
+    data: {
+      ...payload,
+      updated_at: now,
+    },
+  });
+
+  return { success: true, message: "商品更新成功" };
+};
+
+const deleteFood = async (event) => {
+  const foodId = (event.data || {}).food_id;
+  if (!foodId) return { success: false, message: "缺少 food_id" };
+
+  const foodRes = await db.collection("foods").doc(foodId).get();
+  if (!foodRes.data) return { success: false, message: "商品不存在" };
+
+  await db.collection("foods").doc(foodId).remove();
+  return { success: true, message: "商品已删除" };
+};
+
 // const getOpenId = require('./getOpenId/index');
 // const getMiniProgramCode = require('./getMiniProgramCode/index');
 // const createCollection = require('./createCollection/index');
@@ -676,5 +1245,31 @@ exports.main = async (event, context) => {
       return await seedScanOrderTestData();
     case "createScanOrder":
       return await createScanOrder(event);
+    case "listScanOrders":
+      return await listScanOrders(event);
+    case "updateScanOrderStatus":
+      return await updateScanOrderStatus(event);
+    case "listUserOrders":
+      return await listUserOrders(event);
+    case "userOrderAction":
+      return await userOrderAction(event);
+    case "getUserOrderDetail":
+      return await getUserOrderDetail(event);
+    case "loginUserWithPhone":
+      return await loginUserWithPhone(event);
+    case "getLoginUser":
+      return await getLoginUser();
+    case "devMockLogin":
+      return await devMockLogin();
+    case "getBannerImg":
+      return await getBannerImg();
+    case "updateFoodStatus":
+      return await updateFoodStatus(event);
+    case "createFood":
+      return await createFood(event);
+    case "updateFood":
+      return await updateFood(event);
+    case "deleteFood":
+      return await deleteFood(event);
   }
 };

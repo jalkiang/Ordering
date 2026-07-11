@@ -1,0 +1,35 @@
+<view class="page">
+  <view class="profile-card">
+    <image
+      class="avatar"
+      src="{{(user && user.avatar_url) || '/images/icons/avatar.png'}}"
+      mode="aspectFill"
+    />
+    <view class="info">
+      <view class="name">{{(user && user.nick_name) || '未登录'}}</view>
+      <view class="phone" wx:if="{{user && user.phone_number}}">{{user.phone_number}}</view>
+      <view class="openid" wx:if="{{user && user.openid}}">openid: {{user.openid}}</view>
+      <view class="tips" wx:else>请先微信登录，订单将按用户隔离</view>
+    </view>
+  </view>
+
+  <button
+    class="login-btn"
+    open-type="getPhoneNumber"
+    bindgetphonenumber="onGetPhoneNumber"
+    loading="{{loggingIn}}"
+    disabled="{{loggingIn}}"
+  >
+    {{user && user.phone_number ? '重新授权手机号' : '微信授权手机号登录'}}
+  </button>
+
+  <button
+    wx:if="{{isDevEnv}}"
+    class="mock-btn"
+    bindtap="onMockLoginTap"
+    loading="{{loggingIn}}"
+    disabled="{{loggingIn}}"
+  >
+    开发环境临时登录（测试）
+  </button>
+</view>

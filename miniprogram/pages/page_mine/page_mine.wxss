@@ -1,0 +1,68 @@
+.page {
+  min-height: 100vh;
+  background: #f7f8fa;
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.profile-card {
+  background: #ffffff;
+  border-radius: 18rpx;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 50%;
+  background: #f0f0f0;
+}
+
+.info {
+  margin-left: 20rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.phone {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  color: #333;
+}
+
+.openid {
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  color: #999;
+  word-break: break-all;
+}
+
+.tips {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.login-btn {
+  margin-top: 24rpx;
+  border-radius: 999rpx;
+  background: #07c160;
+  color: #ffffff;
+  font-size: 30rpx;
+}
+
+.mock-btn {
+  margin-top: 16rpx;
+  border-radius: 999rpx;
+  background: #f0f4ff;
+  color: #355bdb;
+  font-size: 28rpx;
+}

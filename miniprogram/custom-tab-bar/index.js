@@ -16,7 +16,7 @@ Component({
       text: '订单'
     },
      {
-      pagePath: '/pages/mine/mine',
+      pagePath: '/pages/page_mine/page_mine',
       iconPath: '/images/icons/mine_normal.png',
       selectedIconPath: '/images/icons/mine_select.png',
       text: '我的'

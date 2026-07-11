@@ -67,6 +67,12 @@ Page({
       currentStoreId: this.data.currentStoreId || firstStore._id || "",
       currentStoreName: this.data.currentStoreName || firstStore.name || "",
     });
+    if (!this.data.currentStoreId && firstStore._id) {
+      this.persistOrderContext({
+        store_id: firstStore._id,
+        store_name: firstStore.name || "",
+      });
+    }
   },
 
   parseTableIdFromScene(scene) {
@@ -158,6 +164,12 @@ Page({
           currentTableId: "",
           currentTableNo: "",
         });
+        this.persistOrderContext({
+          store_id: selectedStore._id,
+          store_name: selectedStore.name,
+          table_id: "",
+          table_no: "",
+        });
 
         await this.fetchMenuData(selectedStore._id);
       },
@@ -189,6 +201,16 @@ Page({
       cartList: [],
       totalPrice: 0,
       totalCount: 0,
+    });
+  },
+
+  persistOrderContext(extra = {}) {
+    wx.setStorageSync("order_context", {
+      store_id: this.data.currentStoreId || "",
+      store_name: this.data.currentStoreName || "",
+      table_id: this.data.currentTableId || "",
+      table_no: this.data.currentTableNo || "",
+      ...extra,
     });
   },
 
@@ -228,6 +250,12 @@ Page({
       currentStoreName: matchedStore.name || this.data.currentStoreName || "",
       currentTableId: table._id,
       currentTableNo: table.table_no || table.table_name || "",
+    });
+    this.persistOrderContext({
+      store_id: table.store_id,
+      store_name: matchedStore.name || this.data.currentStoreName || "",
+      table_id: table._id,
+      table_no: table.table_no || table.table_name || "",
     });
 
     await this.fetchMenuData(table.store_id);

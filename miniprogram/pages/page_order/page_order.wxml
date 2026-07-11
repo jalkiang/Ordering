@@ -1,2 +1,45 @@
-<!--pages/page_order/page_order.wxml-->
-<text>pages/page_order/page_order.wxml</text>
+<view class="page" style="padding-bottom: {{paddingBottom}}px;">
+  <view class="header">
+    <view class="title">我的订单</view>
+    <view class="store-tip" wx:if="{{storeName}}">门店：{{storeName}}</view>
+  </view>
+
+  <scroll-view class="status-tabs" scroll-x>
+    <view class="tabs-inner">
+      <view
+        wx:for="{{statusTabs}}"
+        wx:key="value"
+        class="tab-item {{currentStatus === item.value ? 'active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="onStatusTabTap"
+      >
+        {{item.label}}
+      </view>
+    </view>
+  </scroll-view>
+
+<!--   <view class="loading" wx:if="{{loading}}">加载中...</view> -->
+  <view class="empty" wx:if="{{!loading && orders.length === 0}}">暂无订单</view>
+
+  <view
+    wx:for="{{orders}}"
+    wx:key="_id"
+    class="order-card"
+    data-order-id="{{item._id}}"
+    bindtap="onOrderCardTap"
+  >
+    <view class="order-header">
+      <view class="store-name">{{item.store_display_name}}</view>
+      <view class="status {{item.order_status}}">{{item.status_text}}</view>
+    </view>
+    <view class="order-meta row-between">
+      <text>下单：{{item.created_at_text}}</text>
+      <text>桌号：{{item.table_no || '-'}}</text>
+    </view>
+    <view class="goods-line">{{item.first_item_text}}</view>
+    <view class="order-meta row-between">
+      <text>菜品数量：{{item.total_quantity}}</text>
+      <text class="price">合计：¥{{item.payable_amount}}</text>
+    </view>
+  </view>
+</view>

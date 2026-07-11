@@ -45,7 +45,7 @@
 }
 
 .context-btn.primary {
-  background: #07c160;
+  background: #0a59f7;
   color: #ffffff;
 }
 
@@ -72,7 +72,7 @@
   background-color: #fff;
   color: #000;
   font-weight: bold;
-  border-left: 8rpx solid #07c160; /* 微信绿 */
+  border-left: 8rpx solid #0a59f7; 
 }
 
 /* 右侧菜品 */
@@ -267,7 +267,7 @@
   font-weight: bold;
 }
 .submit-btn.usable {
-  background: #07c160;
+  background: #0a59f7;
   color: #fff;
 }
 
@@ -356,7 +356,7 @@
   width: 44rpx;
   height: 44rpx;
   border-radius: 50%;
-  background-color: #07c160;
+  background-color: #0a59f7;
   position: relative; /* 必须 */
   color: transparent; /* 隐藏原有的文本内容，防止重影 */
 }
@@ -377,12 +377,12 @@
 /* 2. 减号按钮（白底绿边） */
 .minus-btn {
   background-color: #ffffff;
-  border: 2rpx solid #07c160; /* 替换成你的主题色 */
+  border: 2rpx solid #0a59f7; 
 }
 
 /* 3. 加号按钮（纯绿底） */
 .add-btn {
-  background-color: #07c160; /* 替换成你的主题色 */
+  background-color: #0a59f7; /* 替换成你的主题色 */
 }
 
 .add-btn::before,
@@ -404,13 +404,13 @@
 }
 
 .minus-btn::before {
-  background-color: #07c160;
+  background-color: #0a59f7;
   height: 5rpx;
 }
 
 .add-btn:active {
   transform: scale(0.94);
-  background-color: #06ad56;
+  background-color: #0a59f7;
 }
 
 .minus-btn:active {
@@ -455,7 +455,7 @@
   position: relative; /* 必须：作为小红点绝对定位的基准 */
   font-size: 24rpx;
   color: #ffffff;
-  background-color: #07c160; /* 你的主题色 */
+  background-color: #0a59f7; /* 你的主题色 */
   padding: 10rpx 24rpx;
   border-radius: 24rpx;
   
@@ -507,7 +507,7 @@
 .minus-btn {
   width: 44rpx;
   height: 44rpx;
-  border: 2rpx solid #07c160;
+  border: 2rpx solid #0a59f7;
   color: transparent;
   border-radius: 50%;
   background-color: #ffffff;
@@ -605,8 +605,8 @@
 /* 选中高亮标签 */
 .spec-tag-item.active {
   background: #f0fbf5;
-  color: #07c160;
-  border-color: #07c160;
+  color: #0a59f7;
+  border-color: #0a59f7;
   font-weight: bold;
 }
 
@@ -640,7 +640,7 @@
 
 /* 底部“加入购物车”大按钮 */
 .spec-add-cart-btn {
-  background: #07c160;
+  background: #0a59f7;
   color: #ffffff;
   font-size: 26rpx;
   font-weight: bold;
@@ -663,12 +663,12 @@
   box-sizing: border-box;
 }
 .spec-step-btn.minus {
-  border: 2rpx solid #07c160;
-  color: #07c160;
+  border: 2rpx solid #0a59f7;
+  color: #0a59f7;
   line-height: 46rpx;
 }
 .spec-step-btn.add {
-  background: #07c160;
+  background: #0a59f7;
   color: #ffffff;
   line-height: 48rpx;
 }

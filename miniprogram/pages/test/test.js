@@ -1,6 +1,8 @@
 // pages/test/test.js
 Page({
-
+  getUserPhoneNumber(e){
+    
+  },
   /**
    * 页面的初始数据
    */

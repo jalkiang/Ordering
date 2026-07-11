@@ -1,5 +1,17 @@
 <!--pages/home/home.wxml-->
-<text>pages/home/home.wxml</text>
-<view>
-<button class="btn_order_food" bindtap="order_food">点餐</button>
-</view> 
+<view class="container">
+  <view class="top">
+    <view class="page-section page-section-spacing swiper">
+      <swiper indicator-dots="{{indicatorDots}}" autoplay="{{autoplay}}" interval="{{interval}}" duration="{{duration}}">
+        <block wx:for="{{background}}" wx:key="*this">
+          <swiper-item>
+            <image class="banner-img" src="{{item}}" mode="aspectFill"></image>
+          </swiper-item>
+        </block>
+      </swiper>
+    </view>
+  </view>
+  <view>
+    <button class="btn_order_food" bindtap="order_food">点餐</button>
+  </view> 
+</view>

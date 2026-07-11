@@ -58,6 +58,23 @@ Page({
 
   async onSubmitOrder() {
     if (this.data.submitting) return;
+    const app = getApp();
+    const currentUser = app.globalData.currentUser || wx.getStorageSync("current_user");
+    if (!currentUser || !currentUser.phone_number) {
+      wx.showModal({
+        title: "请先登录",
+        content: "下单前需要先完成微信手机号授权登录，是否前往我的页面？",
+        success: (res) => {
+          if (res.confirm) {
+            wx.switchTab({
+              url: "/pages/page_mine/page_mine",
+            });
+          }
+        },
+      });
+      return;
+    }
+
     if (!this.data.totalCount) {
       wx.showToast({
         title: "购物车为空",
@@ -82,6 +99,7 @@ Page({
           type: "createScanOrder",
           data: {
             store_id: this.data.context.store_id,
+            store_name: this.data.context.store_name,
             table_id: this.data.context.table_id,
             table_no: this.data.context.table_no,
             people_count: this.data.peopleCount,
